@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace HighwayFlow
@@ -15,7 +15,7 @@ namespace HighwayFlow
         public readonly List<MinuteStat> minutes = new List<MinuteStat>();
 
         readonly List<Vehicle>[] lists;       // index = lane + 3, each sorted by x ascending
-        readonly Random rng;
+        readonly System.Random rng;
         readonly Queue<Vehicle> mainQ = new Queue<Vehicle>(), rampQ = new Queue<Vehicle>();
         double nextMain = double.PositiveInfinity, nextRamp = double.PositiveInfinity;
         int nextId, stepCount;
@@ -31,7 +31,7 @@ namespace HighwayFlow
         {
             P = p;
             Lay = p.Resolve();
-            rng = new Random(p.seed);
+            rng = new System.Random(p.seed);
             lists = new List<Vehicle>[p.lanes + 3];
             for (int i = 0; i < lists.Length; i++) lists[i] = new List<Vehicle>();
         }
@@ -428,3 +428,4 @@ namespace HighwayFlow
         }
     }
 }
+
