@@ -61,7 +61,12 @@ namespace HighwayFlow
         public static Material Lit(string key, Color c, float smooth = 0.15f)
         {
             if (cache.TryGetValue(key, out var m) && m != null) return m;
-            var sh = Shader.Find("Universal Render Pipeline/Lit"); if (sh == null) sh = Shader.Find("Standard");
+            var sh = Shader.Find("Universal Render Pipeline/Lit");
+            if (sh == null) sh = Shader.Find("Universal Render Pipeline/Simple Lit");
+            if (sh == null) sh = Shader.Find("Universal Render Pipeline/Unlit");
+            if (sh == null) sh = Shader.Find("Standard");
+            if (sh == null) sh = Shader.Find("Sprites/Default");
+            if (sh == null) Debug.LogError("[HighwayFlow] no usable shader found; the build is missing Always Included Shaders (menu HighwayFlow > Include Runtime Shaders In Build).");
             m = new Material(sh) { name = key, enableInstancing = true };
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
             if (m.HasProperty("_Color")) m.SetColor("_Color", c);
