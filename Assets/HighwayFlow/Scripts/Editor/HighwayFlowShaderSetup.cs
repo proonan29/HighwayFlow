@@ -9,7 +9,7 @@ namespace HighwayFlow.EditorTools
     /// <summary>
     /// MeshUtil.Lit() finds shaders by name at runtime. In a player build a shader that no asset references is
     /// stripped, Shader.Find returns null and the 3D world turns invisible (only the UI Toolkit panel is left).
-    /// This adds the shaders to Graphics Settings > Always Included Shaders, on editor load and before every build.
+    /// This adds the URP shaders (package assets only) to Graphics Settings > Always Included Shaders, on editor load and before every build.
     /// </summary>
     [InitializeOnLoad]
     public class HighwayFlowShaderSetup : IPreprocessBuildWithReport
@@ -19,8 +19,6 @@ namespace HighwayFlow.EditorTools
             "Universal Render Pipeline/Lit",
             "Universal Render Pipeline/Unlit",
             "Universal Render Pipeline/Simple Lit",
-            "GUI/Text Shader",
-            "Sprites/Default",
         };
 
         static HighwayFlowShaderSetup() { EditorApplication.delayCall += () => Ensure(false); }
@@ -39,6 +37,19 @@ namespace HighwayFlow.EditorTools
             var list = so.FindProperty("m_AlwaysIncludedShaders");
             if (list == null) return;
             bool changed = false;
+            // Built-in shaders that live in "Library/unity default resources" are marked HideFlags.DontSave and make
+            // the build fail ("An asset is marked with HideFlags.DontSave"). Remove any we added earlier.
+            for (int i = list.arraySize - 1; i >= 0; i--)
+            {
+                var o = list.GetArrayElementAtIndex(i).objectReferenceValue;
+                if (o != null && AssetDatabase.GetAssetPath(o) == "Library/unity default resources")
+                {
+                    list.GetArrayElementAtIndex(i).objectReferenceValue = null;
+                    list.DeleteArrayElementAtIndex(i);
+                    changed = true;
+                    if (log) Debug.Log("[HighwayFlow] removed DontSave built-in shader from Always Included Shaders: " + o.name);
+                }
+            }
             foreach (var name in Shaders)
             {
                 var sh = Shader.Find(name);
